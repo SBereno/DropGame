@@ -1,16 +1,14 @@
 package com.sbv.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -29,10 +27,12 @@ public class GameScreen extends ScreenAdapter {
 	private OrthographicCamera camera;
 	private Rectangle bucket;
 	private Array<Rectangle> raindrops;
+	private Rectangle intersection;
 	private long lastDropTime;
 	private int score;
 	private String comptaGotes;
 	private boolean isPaused;
+	private TextureRegion backgroundTexture;
 	State state = State.Running;
 
 	public GameScreen(DropGame game) {
@@ -68,6 +68,11 @@ public class GameScreen extends ScreenAdapter {
 		bucket.y = 20;
 		bucket.width = 64;
 		bucket.height = 64;
+		intersection = new Rectangle();
+		intersection.height = 0.1f;
+		intersection.width = bucket.width;
+
+		backgroundTexture = new TextureRegion(new Texture("Background.jpg"), 0, 0, 800, 480);
 
 		// llamada al metodo que spawnea las gotas
 		raindrops = new Array<Rectangle>();
@@ -85,7 +90,7 @@ public class GameScreen extends ScreenAdapter {
 					rainMusic.stop();
 					endGame.play();
 					isPaused = true;
-					game.setScreen(new EndScreen(game, score));
+					game.setScreen(new EndScreen(game, score, camera));
 				}
 				break;
 		}
@@ -94,6 +99,8 @@ public class GameScreen extends ScreenAdapter {
 
 	public void update() {
 		// Listeners para el movimiento del cubo
+		intersection.x = bucket.x;
+		intersection.y = bucket.y + 64;
 		if (Gdx.input.isTouched()) {
 			Vector3 touchPos = new Vector3();
 			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -116,7 +123,7 @@ public class GameScreen extends ScreenAdapter {
 				iter.remove();
 				this.state = State.Paused;
 			}
-			if (raindrop.overlaps(bucket)) {
+			if (raindrop.overlaps(intersection)) {
 				score++;
 				comptaGotes = "Score: " + score;
 				dropSound.play();
@@ -125,17 +132,15 @@ public class GameScreen extends ScreenAdapter {
 		}
 	}
 	public void draw() {
-		// Se indica el color del fondo
-		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
 		// Se pone la camara y el batch
 		camera.update();
 		game.batch.setProjectionMatrix(camera.combined);
 		game.batch.begin();
+		game.batch.draw(backgroundTexture, 0, 0);
 
 		// Se dibuja el cubo, las gotas y el score
 		game.batch.draw(bucketImage, bucket.x, bucket.y);
+		game.batch.draw(dropImage, intersection.x, intersection.y);
 		game.font.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		game.font.draw(game.batch, comptaGotes, Gdx.graphics.getWidth() * .025f, Gdx.graphics.getHeight() * .95f);
 		game.font.draw(game.batch, "FPS: " + Gdx.graphics.getFramesPerSecond(), Gdx.graphics.getWidth() * .90f, Gdx.graphics.getHeight() * .95f);
