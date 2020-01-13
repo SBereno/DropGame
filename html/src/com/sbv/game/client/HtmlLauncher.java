@@ -3,7 +3,7 @@ package com.sbv.game.client;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
-import com.sbv.game.MyGame;
+import com.sbv.game.GameScreen;
 
 public class HtmlLauncher extends GwtApplication {
         @Override
@@ -13,6 +13,6 @@ public class HtmlLauncher extends GwtApplication {
 
         @Override
         public ApplicationListener createApplicationListener () {
-                return new MyGame();
+                return new GameScreen();
         }
 }

@@ -2,7 +2,7 @@ package com.sbv.game.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.sbv.game.MyGame;
+import com.sbv.game.DropGame;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
@@ -10,6 +10,6 @@ public class DesktopLauncher {
 		config.title = "Drop";
 		config.width = 800;
 		config.height = 480;
-		new LwjglApplication(new MyGame(), config);
+		new LwjglApplication(new DropGame(), config);
 	}
 }
