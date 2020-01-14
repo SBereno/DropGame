@@ -33,7 +33,7 @@ public class TitleScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         game.batch.begin();
         game.font.draw(game.batch, "Bienvenido a DropGame", Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .75f);
-        game.font.draw(game.batch, "Usa las flechas o haz click en la pantalla para recoger las gotas", Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .5f);
+        game.font.draw(game.batch, "Usa las flechas o haz click en la pantalla para recoger las gotas. \nEvita las gotas de lluvia acida.", Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .50f);
         game.font.draw(game.batch, "Pulsa espacio o haz click para empezar", Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .25f);
         game.batch.end();
         if (Gdx.input.isTouched()) {

@@ -20,6 +20,7 @@ import java.util.Iterator;
 public class GameScreen extends ScreenAdapter {
 	DropGame game;
 	private Texture dropImage;
+	private Texture acidImage;
 	private Texture bucketImage;
 	private Sound dropSound;
 	private Sound endGame;
@@ -27,12 +28,14 @@ public class GameScreen extends ScreenAdapter {
 	private OrthographicCamera camera;
 	private Rectangle bucket;
 	private Array<Rectangle> raindrops;
+	private Array<Rectangle> aciddrops;
 	private long lastDropTime;
 	private int score;
 	private String comptaGotes;
 	private boolean isPaused;
 	private TextureRegion backgroundTexture;
 	private int dificultad;
+	private double chanceAcid;
 	private float speed;
 	State state = State.Running;
 
@@ -51,6 +54,7 @@ public class GameScreen extends ScreenAdapter {
 		// load the images for the droplet and the bucket, 64x64 pixels each
 		dropImage = new Texture(Gdx.files.internal("droplet.png"));
 		bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+		acidImage = new Texture(Gdx.files.internal("AcidDrop.png"));
 
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("waterdrop.wav"));
@@ -76,6 +80,7 @@ public class GameScreen extends ScreenAdapter {
 
 		// llamada al metodo que spawnea las gotas
 		raindrops = new Array<Rectangle>();
+		aciddrops = new Array<Rectangle>();
 		spawnRaindrop();
 	}
 
@@ -87,8 +92,8 @@ public class GameScreen extends ScreenAdapter {
 				break;
 			case Paused:
 				if (!isPaused) {
-					rainMusic.stop();
 					endGame.play();
+					rainMusic.stop();
 					isPaused = true;
 					game.setScreen(new EndScreen(game, score, camera));
 				}
@@ -114,11 +119,11 @@ public class GameScreen extends ScreenAdapter {
 		// Indica el tiempo maximo hasta que aparece una nueva gota
 		if (TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
 		// Movimienta de las gotas
-		for (Iterator<Rectangle> iter = raindrops.iterator(); iter.hasNext(); ) {
-			Rectangle raindrop = iter.next();
+		for (Iterator<Rectangle> iterRain = raindrops.iterator(); iterRain.hasNext(); ) {
+			Rectangle raindrop = iterRain.next();
 			raindrop.y -= 200 * Gdx.graphics.getDeltaTime() * speed;
 			if (raindrop.y + 64 < 0) {
-				iter.remove();
+				iterRain.remove();
 				this.state = State.Paused;
 			}
 			if (raindrop.overlaps(bucket) && raindrop.y >= 70) {
@@ -126,11 +131,23 @@ public class GameScreen extends ScreenAdapter {
 				dificultad++;
 				comptaGotes = "Score: " + score;
 				dropSound.play();
-				iter.remove();
+				iterRain.remove();
 				if (dificultad == 10) {
 					dificultad = 0;
 					speed = speed * 1.2f;
 				}
+			}
+		}
+
+		for (Iterator<Rectangle> iterAcid = aciddrops.iterator(); iterAcid.hasNext(); ) {
+			Rectangle raindrop = iterAcid.next();
+			raindrop.y -= 200 * Gdx.graphics.getDeltaTime() * speed;
+			if (raindrop.y + 64 < 0) {
+				iterAcid.remove();
+			}
+			if (raindrop.overlaps(bucket) && raindrop.y >= 70) {
+				iterAcid.remove();
+				this.state = State.Paused;
 			}
 		}
 	}
@@ -149,6 +166,9 @@ public class GameScreen extends ScreenAdapter {
 		for (Rectangle raindrop : raindrops) {
 			game.batch.draw(dropImage, raindrop.x, raindrop.y);
 		}
+		for (Rectangle aciddrop : aciddrops) {
+			game.batch.draw(acidImage, aciddrop.x, aciddrop.y);
+		}
 		game.batch.end();
 	}
 
@@ -159,7 +179,12 @@ public class GameScreen extends ScreenAdapter {
 		raindrop.y = 480;
 		raindrop.width = 64;
 		raindrop.height = 64;
-		raindrops.add(raindrop);
+		chanceAcid = Math.random() * 100;
+		if (chanceAcid < 40) {
+			aciddrops.add(raindrop);
+		} else {
+			raindrops.add(raindrop);
+		}
 		lastDropTime = TimeUtils.nanoTime();
 	}
 

@@ -37,18 +37,6 @@ public class EndScreen extends ScreenAdapter {
         skin.setPosition(Gdx.graphics.getWidth() * .60f, Gdx.graphics.getHeight() * .15f);
         skin.setSize(80, 80);
         backgroundTexture = new TextureRegion(new Texture("GameOverBackground.jpg"), 55, 0, 800, 480);
-        Gdx.input.setInputProcessor(new InputAdapter() {
-
-            @Override
-            public boolean keyDown(int keyCode) {
-
-                if (keyCode == Input.Keys.ENTER) {
-                    game.setScreen(new TitleScreen(game));
-                }
-
-                return true;
-            }
-        });
     }
 
     @Override
