@@ -27,12 +27,13 @@ public class GameScreen extends ScreenAdapter {
 	private OrthographicCamera camera;
 	private Rectangle bucket;
 	private Array<Rectangle> raindrops;
-	private Rectangle intersection;
 	private long lastDropTime;
 	private int score;
 	private String comptaGotes;
 	private boolean isPaused;
 	private TextureRegion backgroundTexture;
+	private int dificultad;
+	private float speed;
 	State state = State.Running;
 
 	public GameScreen(DropGame game) {
@@ -42,6 +43,8 @@ public class GameScreen extends ScreenAdapter {
 	public void show() {
 		// Se inicializa el score y se arranca el juego
 		score = 0;
+		dificultad = 0;
+		speed = 1f;
 		comptaGotes = "Score: 0";
 		isPaused = false;
 
@@ -52,7 +55,7 @@ public class GameScreen extends ScreenAdapter {
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("waterdrop.wav"));
 		rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
-		endGame = Gdx.audio.newSound(Gdx.files.internal("EndGame.wav"));
+		endGame = Gdx.audio.newSound(Gdx.files.internal("GameOver.mp3"));
 
 		// start the playback of the background music immediately
 		rainMusic.setLooping(true);
@@ -68,9 +71,6 @@ public class GameScreen extends ScreenAdapter {
 		bucket.y = 20;
 		bucket.width = 64;
 		bucket.height = 64;
-		intersection = new Rectangle();
-		intersection.height = 0.1f;
-		intersection.width = bucket.width;
 
 		backgroundTexture = new TextureRegion(new Texture("Background.jpg"), 0, 0, 800, 480);
 
@@ -99,8 +99,6 @@ public class GameScreen extends ScreenAdapter {
 
 	public void update() {
 		// Listeners para el movimiento del cubo
-		intersection.x = bucket.x;
-		intersection.y = bucket.y + 64;
 		if (Gdx.input.isTouched()) {
 			Vector3 touchPos = new Vector3();
 			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -108,8 +106,8 @@ public class GameScreen extends ScreenAdapter {
 			bucket.x = touchPos.x - 64 / 2;
 		}
 
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) bucket.x -= 200 * Gdx.graphics.getDeltaTime();
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) bucket.x += 200 * Gdx.graphics.getDeltaTime();
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) bucket.x -= 700 * Gdx.graphics.getDeltaTime();
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) bucket.x += 700 * Gdx.graphics.getDeltaTime();
 		if (bucket.x < 0) bucket.x = 0;
 		if (bucket.x > 800 - 64) bucket.x = 800 - 64;
 
@@ -118,16 +116,21 @@ public class GameScreen extends ScreenAdapter {
 		// Movimienta de las gotas
 		for (Iterator<Rectangle> iter = raindrops.iterator(); iter.hasNext(); ) {
 			Rectangle raindrop = iter.next();
-			raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+			raindrop.y -= 200 * Gdx.graphics.getDeltaTime() * speed;
 			if (raindrop.y + 64 < 0) {
 				iter.remove();
 				this.state = State.Paused;
 			}
-			if (raindrop.overlaps(intersection)) {
+			if (raindrop.overlaps(bucket) && raindrop.y >= 70) {
 				score++;
+				dificultad++;
 				comptaGotes = "Score: " + score;
 				dropSound.play();
 				iter.remove();
+				if (dificultad == 10) {
+					dificultad = 0;
+					speed = speed * 1.2f;
+				}
 			}
 		}
 	}
@@ -140,7 +143,6 @@ public class GameScreen extends ScreenAdapter {
 
 		// Se dibuja el cubo, las gotas y el score
 		game.batch.draw(bucketImage, bucket.x, bucket.y);
-		game.batch.draw(dropImage, intersection.x, intersection.y);
 		game.font.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		game.font.draw(game.batch, comptaGotes, Gdx.graphics.getWidth() * .025f, Gdx.graphics.getHeight() * .95f);
 		game.font.draw(game.batch, "FPS: " + Gdx.graphics.getFramesPerSecond(), Gdx.graphics.getWidth() * .90f, Gdx.graphics.getHeight() * .95f);
